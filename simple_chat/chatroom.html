@@ -1,0 +1,87 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>NodeJs Chat Demo</title>
+	<style>
+		form input {
+			font-size: 1.2em;
+			padding: 4px;
+		}
+		form input#message {
+			width: 300px;
+		}
+		li {
+			font-size: 20px;
+			padding: 2px;
+		}
+	</style>
+</head>
+
+<body>
+		
+	<form action="#" id="new_message">
+		<label for="message">
+			<input name="message" type="text" id="message">
+		</label>
+		<input type="submit" value="Send!" />
+	</form>
+
+	<div id="messages">
+
+	</div>
+
+	
+
+	<script type="text/javascript">
+
+		var $id = function(nm){
+			return document.getElementById(nm);
+		}
+		$id('new_message').addEventListener('submit', function(evt){
+			send_message($id('message'));
+			evt.preventDefault();
+			return false;
+		});
+
+		var messages = $id('messages');
+		function add_message(text){
+			var cont    = document.createElement('li')
+			  , time    = document.createElement('span')
+			  , message = document.createElement('message');
+			 cont.appendChild(message);
+			 cont.appendChild(time);
+			 message.innerText = text;
+			 messages.appendChild(cont);
+			 return cont;
+		}
+
+		function send_message(message_input){
+			var xmlhttp_obj = new XMLHttpRequest();
+			xmlhttp_obj.open("POST", "/message", true);
+			xmlhttp_obj.send(message_input.value);
+			xmlhttp_obj.onload = function(){
+				if (xmlhttp_obj.readyState == 4 && xmlhttp_obj.status == 200){
+					message_input.value = '';
+				}
+			}
+		}
+
+		function request_updates(){
+			var xmlhttp_obj = new XMLHttpRequest();
+			xmlhttp_obj.open("GET", "/poll", true);
+			xmlhttp_obj.send(null);
+			xmlhttp_obj.onreadystatechange = function(evt){
+				if (xmlhttp_obj.readyState == 4 && xmlhttp_obj.status == 200){
+					add_message(xmlhttp_obj.responseText);
+					delete xmlhttp_obj;
+					request_updates();
+				}
+			}
+		}
+		window.onload = function(){
+			request_updates();
+		}
+
+	</script>
+</body>
+</html>

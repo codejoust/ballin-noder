@@ -1,0 +1,63 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>All Images...</title>
+<style>
+	body { font-family: Helvetica; text-align: center; }
+	.line { height: 300px; }
+	.img { display: inline-block; width: 400px; height: 400px; background-size: cover;}
+	.img p { position: absolute; }
+</style>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+	var grid_elements = [];
+	var socket = io.connect('http://localhost');
+	function render(){
+		for (var i = 0; i < grid_elements.length; i++){
+			render_grid_el(grid_elements[i]);
+		}
+	}
+	function render_grid_el(grid_el){
+		var dom_el = document.getElementById('grid_' + grid_el.grid_x + '_' + grid_el.grid_y);
+		if (!grid_el.image_url){
+			grid_el.image_url = 'default.jpg';
+		}
+		dom_el.style.backgroundImage = 'url(' + grid_el.image_url + ')';
+		var message_el = dom_el.getElementsByTagName('p')[0];
+		message_el.innerText = grid_el.message;
+	}
+
+	socket.on('add_grid', function(update_el){
+		for (var i = 0; i < grid_elements.length; i++){
+			if (grid_elements[i].grid_x == update_el.grid_x && 
+				grid_elements[i].grid_y == update_el.grid_y){
+				console.log('found');
+				grid_elements[i] = update_el;
+				render_grid_el(grid_elements[i]);
+				return;
+			}
+		}
+	});
+
+	socket.on('setup_grid', function(grid_list){
+		grid_elements = grid_list;
+		render();
+	});
+
+</script>
+</head>
+<body>
+
+	<h1>&lt;3 the grid</h1>
+	<div class="list">
+	<% for (var i = 0; i < grid_size; i++){ %>
+		<!--<div class="line">-->
+		<% for (var j = 0; j < grid_size; j++){ %>
+			<div id="grid_<%= i %>_<%= j %>" class="img"><p></p></div>	
+		<% } %>
+		<!--</div>-->
+	<% } %>
+	</div>
+
+</body>
+</html>
